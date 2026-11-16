@@ -1878,6 +1878,12 @@ export component PluginSettings inherits VerticalLayout {
         toggled => { root.preferences-changed(); }
     }
     SettingsSwitch {
+        text: "Translate";
+        description: "A message's menu gets Translate, which shows it in English.";
+        checked <=> Plugins.translate;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
         text: "SilentTyping";
         description: "Nobody sees you typing.";
         checked: !root.share-typing; controlled: true;

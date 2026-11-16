@@ -2266,6 +2266,8 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         }
     });
     let state = adapter.clone();
+    window.on_translate_message(move |item| state.borrow_mut().translate(&item));
+    let state = adapter.clone();
     window.on_import_theme_file(move || state.borrow_mut().import_theme_file());
     let state = adapter.clone();
     window.on_import_theme_link(move |link| state.borrow_mut().import_theme_link(&link));

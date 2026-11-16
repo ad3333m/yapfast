@@ -1369,6 +1369,8 @@ export component MessageMenu inherits Rectangle {
     in property <string> message-id;
     in property <bool> can-mark-unread;
     callback mark-unread(string);
+    /// The Translate plugin: translates the message into English.
+    callback translate(string);
     /// The open channel's apps' message commands, which "Apps" lists.
     in property <[CommandChoice]> app-commands;
     /// The Apps submenu opens left of the menu, for want of room on its
@@ -1497,6 +1499,11 @@ export component MessageMenu inherits Rectangle {
                 text: "Mark Unread"; icon: @image-url("icons/message-circle.svg");
                 hovered => { root.apps-open = false; }
                 clicked => { root.mark-unread(root.menu-message.item); }
+            }
+            if Plugins.translate && root.menu-message.body != "": MenuItem {
+                text: "Translate"; icon: @image-url("icons/message-square-text.svg");
+                hovered => { root.apps-open = false; }
+                clicked => { root.translate(root.menu-message.item); }
             }
             if root.message-link != "": MenuItem {
                 text: "Copy Message Link"; icon: @image-url("icons/link.svg");

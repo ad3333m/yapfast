@@ -69,6 +69,7 @@ mod stickers;
 mod theme;
 mod tiles;
 mod title_bar;
+mod translate;
 mod updates;
 mod yapfast;
 
@@ -1486,6 +1487,7 @@ fn plugin_switch(switches: &Plugins<'_>, plugin: yapfast_core::plugins::Plugin, 
         Plugin::DisableCameras => switch!(get_disable_cameras, set_disable_cameras),
         Plugin::PinIcon => switch!(get_pin_icon, set_pin_icon),
         Plugin::GoogleThat => switch!(get_google_that, set_google_that),
+        Plugin::Translate => switch!(get_translate, set_translate),
     }
 }
 

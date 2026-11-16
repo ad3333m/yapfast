@@ -25,10 +25,12 @@ pub enum Plugin {
     PinIcon,
     /// `/google words` sends a link to Google's results for them.
     GoogleThat,
+    /// A message's menu translates it into English.
+    Translate,
 }
 
 /// Every plugin, in Settings → Plugins' order.
-pub const ALL: [Plugin; 8] = [
+pub const ALL: [Plugin; 9] = [
     Plugin::MessageLogger,
     Plugin::FakeNitro,
     Plugin::SecretGuard,
@@ -37,6 +39,7 @@ pub const ALL: [Plugin; 8] = [
     Plugin::DisableCameras,
     Plugin::PinIcon,
     Plugin::GoogleThat,
+    Plugin::Translate,
 ];
 
 static ON: AtomicU32 = AtomicU32::new(0);
@@ -152,16 +155,43 @@ fn card(digits: &[u32]) -> bool {
 /// GoogleThat's message for `/google words`: the words, linking to Google's
 /// results for them.
 pub fn google(words: &str) -> String {
-    let mut query = String::new();
-    for byte in words.trim().bytes() {
+    let query = query_encode(words.trim());
+    let words = words.trim().replace(['[', ']'], "");
+    format!("[{words}](https://www.google.com/search?q={query})")
+}
+
+/// `text` as a URL query value: spaces as `+`, the rest percent-encoded
+/// but for letters, digits and `-_.~`.
+pub fn query_encode(text: &str) -> String {
+    let mut query = String::with_capacity(text.len());
+    for byte in text.bytes() {
         match byte {
             b' ' => query.push('+'),
             b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => query.push(byte as char),
             _ => query.push_str(&format!("%{byte:02X}")),
         }
     }
-    let words = words.trim().replace(['[', ']'], "");
-    format!("[{words}](https://www.google.com/search?q={query})")
+    query
+}
+
+/// Translate's request to Google's free endpoint, into English.
+pub fn translate_url(text: &str) -> String {
+    format!(
+        "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q={}",
+        query_encode(text)
+    )
+}
+
+/// The translation and the language it came from, from that endpoint's
+/// answer: `[[["text", "original", …], …], null, "de", …]`.
+pub fn translation(answer: &serde_json::Value) -> Option<(String, String)> {
+    let text: String = answer[0]
+        .as_array()?
+        .iter()
+        .filter_map(|part| part[0].as_str())
+        .collect();
+    let from = answer[2].as_str().unwrap_or("another language").to_owned();
+    (!text.is_empty()).then_some((text, from))
 }
 
 /// A custom emoji's picture, for FakeNitro to send as a link.

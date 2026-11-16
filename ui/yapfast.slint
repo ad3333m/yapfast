@@ -1643,6 +1643,8 @@ export component YapfastWindow inherits Window {
     /// Whether a message's menu offers Mark Unread.
     pure callback can-mark-unread(string) -> bool;
     callback mark-unread(string);
+    /// The Translate plugin, from a message's menu; see src/ui/translate.rs.
+    callback translate-message(string);
     /// The text selected in the message at this point in the window, as
     /// copied, or empty when none is.
     pure callback selection-at(length, length) -> string;
@@ -2598,6 +2600,7 @@ export component YapfastWindow inherits Window {
             pin-message(item) => { root.pin-message(item); message-menu.close(); }
             message-link: root.menu-message-link; message-id: root.menu-message-id; can-mark-unread: root.menu-can-mark-unread;
             mark-unread(item) => { root.mark-unread(item); message-menu.close(); }
+            translate(item) => { root.translate-message(item); message-menu.close(); }
             // Shift and a click deletes at once, as Discord's menu does; a
             // plain click asks first.
             request-delete(item) => {

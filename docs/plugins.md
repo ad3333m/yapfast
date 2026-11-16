@@ -15,6 +15,7 @@ plugins, named as Vencord names them. The switches are the `Plugins` global in
 | CleanerDiscord | The composer's GIF and sticker buttons go. | `ui/yapfast.slint` |
 | DisableCameras | The camera button in a call stays off. | `ui/voice.slint` |
 | PinIcon | A pinned message shows a pin and "Pinned" under its text. | `ui/messages.slint` |
+| Translate | A message's menu gets Translate: Google's free endpoint (`translate.googleapis.com`, no account) puts it in English in the notice above the conversation. | `src/ui/translate.rs` |
 | GoogleThat | `/google words`, sent, goes as `[words](https://www.google.com/search?q=words)`. | `send` in `application/compose.rs` |
 
 Four more flip settings other sections show too: SilentTyping is Messages'
