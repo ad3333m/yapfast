@@ -2032,16 +2032,21 @@ export component YapfastWindow inherits Window {
             close => { soundboard-menu.close(); }
         }
     }
+    // Discord's Screen Share window: over the whole window, dimmed, which a
+    // click outside it closes.
     share-menu := PopupWindow {
-        x: max(8px, min(root.width - self.width - 8px, root.menu-x - 6px));
-        y: max(8px, root.menu-y - self.height - 6px);
-        // Wider for the screens' pictures.
-        width: root.share-screens.length > 0 ? 336px : 240px;
-        // No taller than the window has room for: with many windows and
-        // cameras listed, or the window short or zoomed, its choices scroll.
-        height: min(share-content.full-height, root.height - 16px);
-        close-policy: PopupClosePolicy.close-on-click-outside;
+        x: 0px; y: 0px; width: root.width; height: root.height;
+        close-policy: PopupClosePolicy.no-auto-close;
+        Rectangle {
+            background: #000000b3;
+            TouchArea { clicked => { share-menu.close(); } }
+        }
         share-content := ShareMenu {
+            width: min(620px, root.width - 32px);
+            // No taller than the window has room for: its choices scroll.
+            height: min(self.full-height, root.height - 32px);
+            x: (root.width - self.width) / 2; y: (root.height - self.height) / 2;
+            close => { share-menu.close(); }
             screens: root.share-screens; windows: root.share-windows; cameras: root.share-cameras;
             dialog: !root.share-lists; switching: root.pick-switch;
             pick-source <=> root.pick-source; pick-resolution <=> root.pick-resolution; pick-fps <=> root.pick-fps;
