@@ -121,3 +121,21 @@ pub fn forget_account(user: &str) {
         tracing::warn!(%error, "could not forget a kept Discord login");
     }
 }
+
+/// EnhancedDecor: the shop's decorations and nameplates.
+pub async fn shop_catalog() -> anyhow::Result<Vec<yapfast_discord::collectibles::ShopItem>> {
+    let api = Api::new(token::load()?)?;
+    Ok(yapfast_discord::collectibles::catalog(&api.collectibles_categories().await?))
+}
+
+/// EnhancedDecor: shows a decoration and nameplate on `user`'s own account
+/// here, by SKU and the plate's palette; none of either shows what they equip.
+pub fn set_local_look(user: &str, decoration: Option<&str>, nameplate: Option<(&str, &str)>) {
+    use yapfast_discord::collectibles::{LocalLook, Plate, set_local};
+    let look = LocalLook {
+        decoration: decoration.and_then(|sku| sku.parse().ok()),
+        plate: nameplate
+            .and_then(|(sku, palette)| Some(Plate::restore(sku.parse().ok()?, palette))),
+    };
+    set_local(user, (look != LocalLook::default()).then_some(look));
+}

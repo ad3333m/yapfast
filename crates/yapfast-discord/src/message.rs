@@ -1678,7 +1678,8 @@ impl Names {
     /// Changes whenever what [`Names::name`], [`Names::avatar`],
     /// [`Names::roles`] or [`Names::render`] give may have.
     pub fn version(&self) -> u64 {
-        self.version
+        // EnhancedDecor's look changes what the account wears.
+        self.version + collectibles::local_version()
     }
 
     pub fn learn_user(&mut self, user: &Value) {
@@ -1989,6 +1990,9 @@ impl Names {
     pub fn decoration_sku(&self, guild: Option<&str>, user: &str) -> Option<Id> {
         let user_id = id(user)?;
         self.touch(user_id);
+        if let Some(sku) = collectibles::local(user_id).and_then(|look| look.decoration) {
+            return Some(sku);
+        }
         guild
             .and_then(|guild| member_key(guild, user))
             .and_then(|key| self.member_decorations.get(&key))
@@ -2016,6 +2020,9 @@ impl Names {
     pub fn plate(&self, guild: Option<&str>, user: &str) -> Option<Plate> {
         let user_id = id(user)?;
         self.touch(user_id);
+        if let Some(plate) = collectibles::local(user_id).and_then(|look| look.plate) {
+            return Some(plate);
+        }
         guild
             .and_then(|guild| member_key(guild, user))
             .and_then(|key| self.member_nameplates.get(&key))

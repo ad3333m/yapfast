@@ -195,9 +195,10 @@ pub fn translation(answer: &serde_json::Value) -> Option<(String, String)> {
 }
 
 /// A custom emoji's picture, for FakeNitro to send as a link.
+/// Its text is a zero-width space, so only the picture Discord embeds shows.
 pub fn emoji_link(name: &str, id: &str, animated: bool) -> String {
     let format = if animated { "gif" } else { "webp" };
-    format!("[{name}](https://cdn.discordapp.com/emojis/{id}.{format}?size=48&name={name}&lossless=true)")
+    format!("[\u{200b}](https://cdn.discordapp.com/emojis/{id}.{format}?size=48&name={name}&lossless=true)")
 }
 
 #[cfg(test)]

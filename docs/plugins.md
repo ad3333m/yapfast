@@ -9,7 +9,7 @@ plugins, named as Vencord names them. The switches are the `Plugins` global in
 | Plugin | What it does | Where |
 | --- | --- | --- |
 | MessageLogger | A deleted message stays, with `-# (deleted)` under it, and an edited one shows what it said before, a `-# was:` line for each edit. Kept while Yapfast holds the channel's messages; loading it again from Discord drops them. Editing your own message leaves the lines out. | `change` in `discord_text/open_channel.rs`, `begin_edit` |
-| FakeNitro | The emoji picker unlocks every server's emoji, animated ones too. A `:name:` this account can't use goes as a link to its picture, `[name](https://cdn.discordapp.com/emojis/ID.webp?…)`, which Discord shows. Reactions still need Nitro. | `src/emoji.rs`, `outgoing_body` |
+| FakeNitro | The emoji picker unlocks every server's emoji, animated ones too. A `:name:` this account can't use goes as a link to its picture whose text is a zero-width space, `[​](https://cdn.discordapp.com/emojis/ID.webp?…)`, so only the picture Discord embeds shows. Reactions still need Nitro. | `src/emoji.rs`, `outgoing_body` |
 | SecretGuard | A message with what passes for a card number (13 to 16 digits from 3 to 6 that pass the Luhn check) or `password:`/`password =`/`password is` and a value isn't sent; a notice says why, and Enter again with it showing sends it. | `send_in` in `application/compose.rs` |
 | VolumeBooster | People's and streams' volume sliders reach 400%, about eight times as loud. | `ui/voice.slint`, `volume::set` |
 | CleanerDiscord | The composer's GIF and sticker buttons go. | `ui/yapfast.slint` |
