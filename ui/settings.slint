@@ -1854,6 +1854,30 @@ export component PluginSettings inherits VerticalLayout {
         toggled => { root.preferences-changed(); }
     }
     SettingsSwitch {
+        text: "CleanerDiscord";
+        description: "Hides the GIF and sticker buttons beside the message box.";
+        checked <=> Plugins.cleaner-discord;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "DisableCameras";
+        description: "Your camera can't be turned on in calls.";
+        checked <=> Plugins.disable-cameras;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "PinIcon";
+        description: "Pinned messages say so under their text.";
+        checked <=> Plugins.pin-icon;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "GoogleThat";
+        description: "Type /google and some words to send a link to Google's results for them.";
+        checked <=> Plugins.google-that;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
         text: "SilentTyping";
         description: "Nobody sees you typing.";
         checked: !root.share-typing; controlled: true;

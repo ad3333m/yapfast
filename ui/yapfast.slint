@@ -39,7 +39,7 @@ import "fonts/DisplayName-Journal.ttf";
 // Yapfast's window. Its parts live beside it, by area: theme.slint, controls.slint,
 // discord.slint, voice.slint, rail.slint, composer.slint, messages.slint,
 // settings.slint, people.slint, friends.slint, dialogs.slint and sign-in.slint.
-import { Theme, Tip, BadgeTip, ReactionHover, Middle, Popup, PopupMotion, Twemoji } from "theme.slint";
+import { Theme, Tip, BadgeTip, ReactionHover, Middle, Popup, PopupMotion, Twemoji, Plugins } from "theme.slint";
 import { TitleBar, ResizeEdges } from "title_bar.slint";
 import { InboxRow, InboxPopout } from "yapfast/inbox.slint";
 import { GifPicker, GifTile, PickerTab } from "gifs.slint";
@@ -3973,7 +3973,7 @@ export component YapfastWindow inherits Window {
                                         }
                                         // As Discord's: the GIFs, the stickers, then the emoji,
                                         // in one picker.
-                                        if root.can-pick-gifs: VerticalLayout {
+                                        if root.can-pick-gifs && !Plugins.cleaner-discord: VerticalLayout {
                                             alignment: end; padding-bottom: ClientStyle.composer-button-inset;
                                             gif-button := IconButton {
                                                 icon: @image-url("icons/gif.svg"); label: "Open GIF picker";
@@ -3985,7 +3985,7 @@ export component YapfastWindow inherits Window {
                                                 }
                                             }
                                         }
-                                        if root.can-pick-stickers: VerticalLayout {
+                                        if root.can-pick-stickers && !Plugins.cleaner-discord: VerticalLayout {
                                             alignment: end; padding-bottom: ClientStyle.composer-button-inset;
                                             sticker-button := IconButton {
                                                 icon: @image-url("icons/sticker.svg"); label: "Open sticker picker";

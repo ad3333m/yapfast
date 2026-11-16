@@ -497,7 +497,7 @@ export component VoiceDock inherits Rectangle {
                 clicked => { root.open-soundboard(self.absolute-position.x, self.absolute-position.y); }
             }
             if root.can-film: DockButton {
-                horizontal-stretch: 1; enabled: root.voice-ready; on: root.camera-on;
+                horizontal-stretch: 1; enabled: root.voice-ready && (root.camera-on || !Plugins.disable-cameras); on: root.camera-on;
                 icon: root.camera-on ? @image-url("icons/video.svg") : @image-url("icons/video-off.svg");
                 label: root.camera-starting ? "Starting camera..." : root.camera-on ? "Turn off camera" : "Turn on camera";
                 opacity: root.camera-starting ? (0.6 + 0.4 * sin(animation-tick() / 1ms * 0.36deg)) : 1;

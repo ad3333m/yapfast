@@ -17,7 +17,27 @@ pub enum Plugin {
     SecretGuard,
     /// People's and streams' volumes go up to 400%.
     VolumeBooster,
+    /// The composer's GIF and sticker buttons go.
+    CleanerDiscord,
+    /// The camera can't be turned on in calls.
+    DisableCameras,
+    /// Pinned messages say so under their text.
+    PinIcon,
+    /// `/google words` sends a link to Google's results for them.
+    GoogleThat,
 }
+
+/// Every plugin, in Settings → Plugins' order.
+pub const ALL: [Plugin; 8] = [
+    Plugin::MessageLogger,
+    Plugin::FakeNitro,
+    Plugin::SecretGuard,
+    Plugin::VolumeBooster,
+    Plugin::CleanerDiscord,
+    Plugin::DisableCameras,
+    Plugin::PinIcon,
+    Plugin::GoogleThat,
+];
 
 static ON: AtomicU32 = AtomicU32::new(0);
 
@@ -129,6 +149,21 @@ fn card(digits: &[u32]) -> bool {
     sum % 10 == 0
 }
 
+/// GoogleThat's message for `/google words`: the words, linking to Google's
+/// results for them.
+pub fn google(words: &str) -> String {
+    let mut query = String::new();
+    for byte in words.trim().bytes() {
+        match byte {
+            b' ' => query.push('+'),
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => query.push(byte as char),
+            _ => query.push_str(&format!("%{byte:02X}")),
+        }
+    }
+    let words = words.trim().replace(['[', ']'], "");
+    format!("[{words}](https://www.google.com/search?q={query})")
+}
+
 /// A custom emoji's picture, for FakeNitro to send as a link.
 pub fn emoji_link(name: &str, id: &str, animated: bool) -> String {
     let format = if animated { "gif" } else { "webp" };
@@ -162,6 +197,14 @@ mod tests {
         assert_eq!(secret("<@1234567890123456789>"), None, "an id");
         assert_eq!(secret("my password: hunter2"), Some("a password"));
         assert_eq!(secret("I forgot my password"), None);
+    }
+
+    #[test]
+    fn google_that_links_the_search() {
+        assert_eq!(
+            google(" rust & slint "),
+            "[rust & slint](https://www.google.com/search?q=rust+%26+slint)"
+        );
     }
 
     #[test]

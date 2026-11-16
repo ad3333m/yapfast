@@ -12,7 +12,17 @@ plugins, named as Vencord names them. The switches are the `Plugins` global in
 | FakeNitro | The emoji picker unlocks every server's emoji, animated ones too. A `:name:` this account can't use goes as a link to its picture, `[name](https://cdn.discordapp.com/emojis/ID.webp?…)`, which Discord shows. Reactions still need Nitro. | `src/emoji.rs`, `outgoing_body` |
 | SecretGuard | A message with what passes for a card number (13 to 16 digits from 3 to 6 that pass the Luhn check) or `password:`/`password =`/`password is` and a value isn't sent; a notice says why, and Enter again with it showing sends it. | `send_in` in `application/compose.rs` |
 | VolumeBooster | People's and streams' volume sliders reach 400%, about eight times as loud. | `ui/voice.slint`, `volume::set` |
+| CleanerDiscord | The composer's GIF and sticker buttons go. | `ui/yapfast.slint` |
+| DisableCameras | The camera button in a call stays off. | `ui/voice.slint` |
+| PinIcon | A pinned message shows a pin and "Pinned" under its text. | `ui/messages.slint` |
+| GoogleThat | `/google words`, sent, goes as `[words](https://www.google.com/search?q=words)`. | `send` in `application/compose.rs` |
 
 Four more flip settings other sections show too: SilentTyping is Messages'
 "share typing" off, NoReplyMention its reply mention off, ClearURLs its
 tracking removal, and ShowHiddenChannels Discord's locked channels.
+
+Endcord plugins that can't come across: those that patch Discord's web
+client itself (CrashHandler, ConcatenatedModules, NewPluginsManager,
+NoNitroUpsell, the *API plugins), and NoTrack, as Yapfast sends Discord no
+analytics anyway. LoginWithQR, VoiceMessages and UnlimitedAccounts are
+built in: linking by QR code, voice messages and Switch Accounts.
