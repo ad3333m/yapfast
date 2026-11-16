@@ -29,10 +29,12 @@ pub enum Plugin {
     Translate,
     /// The DM button shows dots while someone types to you in a DM.
     HomeTyping,
+    /// Typing in the message box clicks, as a keyboard does.
+    KeyboardSounds,
 }
 
 /// Every plugin, in Settings → Plugins' order.
-pub const ALL: [Plugin; 10] = [
+pub const ALL: [Plugin; 11] = [
     Plugin::MessageLogger,
     Plugin::FakeNitro,
     Plugin::SecretGuard,
@@ -43,6 +45,7 @@ pub const ALL: [Plugin; 10] = [
     Plugin::GoogleThat,
     Plugin::Translate,
     Plugin::HomeTyping,
+    Plugin::KeyboardSounds,
 ];
 
 static ON: AtomicU32 = AtomicU32::new(0);

@@ -17,6 +17,7 @@ plugins, named as Vencord names them. The switches are the `Plugins` global in
 | PinIcon | A pinned message shows a pin and "Pinned" under its text. | `ui/messages.slint` |
 | Translate | A message's menu gets Translate: Google's free endpoint (`translate.googleapis.com`, no account) puts it in English in the notice above the conversation. | `src/ui/translate.rs` |
 | HomeTyping | The DM button shows dots while someone types to you in a DM. | `ui/rail.slint`, `show_workspace` |
+| KeyboardSounds | Each change to the message box plays a short synthesized click, on the default speakers. | `sounds::click`, `set_draft_in` |
 | GoogleThat | `/google words`, sent, goes as `[words](https://www.google.com/search?q=words)`. | `send` in `application/compose.rs` |
 
 Four more flip settings other sections show too: SilentTyping is Messages'

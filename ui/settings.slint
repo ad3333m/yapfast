@@ -1898,6 +1898,12 @@ export component PluginSettings inherits VerticalLayout {
         toggled => { root.preferences-changed(); }
     }
     SettingsSwitch {
+        text: "KeyboardSounds";
+        description: "Typing in the message box clicks, as a keyboard does.";
+        checked <=> Plugins.keyboard-sounds;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
         text: "SilentTyping";
         description: "Nobody sees you typing.";
         checked: !root.share-typing; controlled: true;

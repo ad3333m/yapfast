@@ -77,6 +77,9 @@ impl Application {
             return vec![];
         }
         self.state.drafts.insert(id.clone(), body.clone());
+        if crate::plugins::on(crate::plugins::Plugin::KeyboardSounds) {
+            crate::sounds::click();
+        }
         if self.state.preview {
             vec![]
         } else {
