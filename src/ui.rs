@@ -36,6 +36,7 @@ use yapfast_core::{
 use crate::drop::Drag;
 use crate::{autostart, custom_emoji, emoji, emoji_text, graphics, zoom};
 
+mod accounts;
 mod active_now;
 mod app_commands;
 mod appearance;
@@ -1281,6 +1282,8 @@ struct Layout {
     profile_frames: Option<bool>,
     /// The plugins on in Settings → Plugins, by name, such as `MessageLogger`.
     plugins: Vec<String>,
+    /// The Discord accounts linked on this computer, for Switch Accounts.
+    discord_accounts: Vec<accounts::KeptAccount>,
     /// Joining a call turns the microphone on; on unless turned off.
     unmute_on_join: Option<bool>,
     /// Joining a call deafens.

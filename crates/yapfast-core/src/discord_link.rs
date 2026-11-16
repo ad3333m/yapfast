@@ -97,3 +97,27 @@ async fn run(progress: impl Fn(Progress)) {
         },
     });
 }
+
+/// Switch Accounts: keeps the linked account's login under its user id.
+pub fn remember_account(user: &str) {
+    if let Err(error) = token::remember(user) {
+        tracing::warn!(%error, "could not keep the Discord login for switching");
+    }
+}
+
+/// Links the account kept under `user` instead; the app starts again on it.
+pub fn switch_account(user: &str) -> anyhow::Result<()> {
+    token::switch_to(user)
+}
+
+/// Unlinks the account here only, keeping its login, to link another.
+pub fn add_account() -> anyhow::Result<()> {
+    token::set_aside()
+}
+
+/// Forgets the login kept for `user`.
+pub fn forget_account(user: &str) {
+    if let Err(error) = token::drop_saved(user) {
+        tracing::warn!(%error, "could not forget a kept Discord login");
+    }
+}

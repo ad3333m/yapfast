@@ -528,6 +528,7 @@ impl Adapter {
         self.show_workspace(window);
         self.show_sidebar(window);
         self.show_account(window);
+        self.keep_account(window);
         // A server's search stays, with its words, in the server's channels.
         if changes.selection && self.app.state.search_shown().is_none() {
             window.set_search_text(SharedString::default());

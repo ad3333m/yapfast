@@ -931,7 +931,36 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         });
     }
     bind!(on_restore, Action::Restore);
-    bind!(on_logout, Action::Logout);
+    {
+        // Signing out ends the login, so Switch Accounts drops the account.
+        let adapter = adapter.clone();
+        let weak = window.as_weak();
+        window.on_logout(move || {
+            if let Some(window) = weak.upgrade() {
+                let mut adapter = adapter.borrow_mut();
+                adapter.drop_signed_out_account();
+                adapter.action(&window, Action::Logout);
+            }
+        });
+    }
+    {
+        let adapter = adapter.clone();
+        let weak = window.as_weak();
+        window.on_switch_account(move |id| {
+            if let Some(window) = weak.upgrade() {
+                adapter.borrow_mut().switch_account(&window, &id);
+            }
+        });
+    }
+    {
+        let adapter = adapter.clone();
+        let weak = window.as_weak();
+        window.on_add_account(move || {
+            if let Some(window) = weak.upgrade() {
+                adapter.borrow_mut().add_account(&window);
+            }
+        });
+    }
     bind!(on_refresh_trust, Action::RefreshTrust);
     bind!(on_retry_sync, Action::RetrySync);
     bind!(
