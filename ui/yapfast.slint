@@ -4412,6 +4412,8 @@ export component YapfastWindow inherits Window {
         settings-section <=> root.settings-section;
         discord-build: root.discord-build; preview: root.preview;
         close => { root.settings-open = false; }
+        open-link(link) => { root.open-link(link); }
+        sign-out => { root.settings-open = false; root.logout(); }
         refresh-devices => { root.refresh-devices(); }
         copy-text(text) => { root.copy-text(text); }
         if root.settings-section == 0: AccountSettings {
@@ -4482,6 +4484,7 @@ export component YapfastWindow inherits Window {
             search(text) => { root.decor-search(text); }
             choose(sku, nameplate) => { root.decor-choose(sku, nameplate); }
             take-off => { root.decor-take-off(); }
+            edit-profile => { root.settings-open = false; root.edit-profile(); }
         }
         if root.settings-section == 11: PluginSettings {
             share-typing <=> root.share-typing; reply-ping <=> root.reply-ping-default;
