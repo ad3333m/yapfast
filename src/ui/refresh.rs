@@ -966,6 +966,9 @@ impl Adapter {
                 .iter()
                 .any(|room| room.direct && room.unread > 0),
         );
+        window.set_dms_typing(state.rooms.iter().any(|room| {
+            room.direct && state.typing.get(&room.id).is_some_and(|names| !names.is_empty())
+        }));
         // As in Discord, the DM home counts DM mentions and the friend
         // requests waiting for an answer.
         let dm_mentions: u64 = state

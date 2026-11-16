@@ -27,10 +27,12 @@ pub enum Plugin {
     GoogleThat,
     /// A message's menu translates it into English.
     Translate,
+    /// The DM button shows dots while someone types to you in a DM.
+    HomeTyping,
 }
 
 /// Every plugin, in Settings → Plugins' order.
-pub const ALL: [Plugin; 9] = [
+pub const ALL: [Plugin; 10] = [
     Plugin::MessageLogger,
     Plugin::FakeNitro,
     Plugin::SecretGuard,
@@ -40,6 +42,7 @@ pub const ALL: [Plugin; 9] = [
     Plugin::PinIcon,
     Plugin::GoogleThat,
     Plugin::Translate,
+    Plugin::HomeTyping,
 ];
 
 static ON: AtomicU32 = AtomicU32::new(0);

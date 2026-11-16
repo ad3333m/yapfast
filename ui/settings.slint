@@ -1892,6 +1892,12 @@ export component PluginSettings inherits VerticalLayout {
         toggled => { root.preferences-changed(); }
     }
     SettingsSwitch {
+        text: "HomeTyping";
+        description: "The DM button at the top of the server list shows dots while someone types to you in a DM.";
+        checked <=> Plugins.home-typing;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
         text: "SilentTyping";
         description: "Nobody sees you typing.";
         checked: !root.share-typing; controlled: true;

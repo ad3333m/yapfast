@@ -1493,6 +1493,7 @@ fn plugin_switch(switches: &Plugins<'_>, plugin: yapfast_core::plugins::Plugin, 
         Plugin::PinIcon => switch!(get_pin_icon, set_pin_icon),
         Plugin::GoogleThat => switch!(get_google_that, set_google_that),
         Plugin::Translate => switch!(get_translate, set_translate),
+        Plugin::HomeTyping => switch!(get_home_typing, set_home_typing),
     }
 }
 
