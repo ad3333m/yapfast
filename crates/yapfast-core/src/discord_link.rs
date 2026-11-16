@@ -122,6 +122,13 @@ pub fn forget_account(user: &str) {
     }
 }
 
+pub use yapfast_discord::collectibles::ShopItem;
+
+/// The address of a decoration's or nameplate's still picture.
+pub fn collectible_picture(sku: u64) -> String {
+    yapfast_discord::collectibles::picture(sku)
+}
+
 /// EnhancedDecor: the shop's decorations and nameplates.
 pub async fn shop_catalog() -> anyhow::Result<Vec<yapfast_discord::collectibles::ShopItem>> {
     let api = Api::new(token::load()?)?;

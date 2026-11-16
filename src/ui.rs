@@ -47,6 +47,8 @@ mod call_timer;
 mod callbacks;
 mod channel_settings;
 mod css_theme;
+#[cfg(feature = "discord")]
+mod decor;
 mod emoji_animation;
 mod emoji_grid;
 mod games;
@@ -1285,6 +1287,9 @@ struct Layout {
     plugins: Vec<String>,
     /// The Discord accounts linked on this computer, for Switch Accounts.
     discord_accounts: Vec<accounts::KeptAccount>,
+    /// EnhancedDecor's look on each account here, by user id.
+    #[cfg(feature = "discord")]
+    local_looks: HashMap<String, decor::LocalLook>,
     /// Joining a call turns the microphone on; on unless turned off.
     unmute_on_join: Option<bool>,
     /// Joining a call deafens.

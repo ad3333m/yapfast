@@ -33,6 +33,8 @@ impl Adapter {
             #[cfg(feature = "discord")]
             yapfast_core::discord_link::remember_account(&id);
             KEPT.set(id.clone());
+            #[cfg(feature = "discord")]
+            self.wear_local_look();
         }
         let account = KeptAccount {
             id: id.clone(),

@@ -2265,6 +2265,37 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             state.borrow_mut().save_theme(&window);
         }
     });
+    #[cfg(feature = "discord")]
+    {
+        let state = adapter.clone();
+        let weak = window.as_weak();
+        window.on_decor_opened(move || {
+            if let Some(window) = weak.upgrade() {
+                state.borrow_mut().decor_opened(&window);
+            }
+        });
+        let state = adapter.clone();
+        let weak = window.as_weak();
+        window.on_decor_search(move |query| {
+            if let Some(window) = weak.upgrade() {
+                state.borrow().decor_search(&window, &query);
+            }
+        });
+        let state = adapter.clone();
+        let weak = window.as_weak();
+        window.on_decor_choose(move |sku, nameplate| {
+            if let Some(window) = weak.upgrade() {
+                state.borrow_mut().decor_choose(&window, &sku, nameplate);
+            }
+        });
+        let state = adapter.clone();
+        let weak = window.as_weak();
+        window.on_decor_take_off(move || {
+            if let Some(window) = weak.upgrade() {
+                state.borrow_mut().decor_take_off(&window);
+            }
+        });
+    }
     let state = adapter.clone();
     window.on_translate_message(move |item| state.borrow_mut().translate(&item));
     let state = adapter.clone();
