@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: windows-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   check:
@@ -41,13 +41,26 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ github.token }}
-      - uses: actions/cache@v4
+      # Skia for Windows takes the longest; it's kept as soon as it's built,
+      # whether or not the build after it works.
+      - id: skia
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.cache/cargo-xwin
             .local/windows/skia-static-production/build.json
             .local/windows/skia-static-production/prepared
           key: windows-skia-${{ hashFiles('nix/flake.lock', 'nix/prepare-windows-skia.py', 'nix/prepare-skia-native.py', 'nix/skia-windows-builder/**') }}
+      - if: steps.skia.outputs.cache-hit != 'true'
+        run: mkdir -p .local/windows && nix develop path:./nix#windows --command python3 nix/prepare-windows-skia.py
+      - if: steps.skia.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/cargo-xwin
+            .local/windows/skia-static-production/build.json
+            .local/windows/skia-static-production/prepared
+          key: ${{ steps.skia.outputs.cache-primary-key }}
       - uses: Swatinem/rust-cache@v2
         with:
           cache-on-failure: true
