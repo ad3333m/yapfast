@@ -1,5 +1,5 @@
 import { ScrollView, ListView } from "scrollview.slint";
-import { Theme, Middle, Label, Tip, Popup } from "theme.slint";
+import { Theme, Middle, Label, Tip, Popup, Plugins } from "theme.slint";
 import { ActionButton, IconButton, Avatar, CallButton, VolumeSlider, MenuItem } from "controls.slint";
 import { EmojiCell, EmojiFace } from "messages.slint";
 
@@ -1416,13 +1416,13 @@ export component VolumeMenu inherits Rectangle {
         padding: 12px; spacing: 12px;
         Text { text: root.volume-name; color: Theme.text; font-size: 15px; font-weight: 700; overflow: elide; }
         VolumeSlider {
-            label: "User volume";
+            label: "User volume"; maximum: Plugins.volume-booster ? 400 : 200;
             value <=> root.voice-volume;
             changed(volume) => { root.volume-changed(root.volume-person, false, volume, false); }
             committed(volume) => { root.volume-changed(root.volume-person, false, volume, true); }
         }
         if root.volume-live: VolumeSlider {
-            label: "Stream volume";
+            label: "Stream volume"; maximum: Plugins.volume-booster ? 400 : 200;
             value <=> root.stream-volume;
             changed(volume) => { root.volume-changed(root.volume-person, true, volume, false); }
             committed(volume) => { root.volume-changed(root.volume-person, true, volume, true); }

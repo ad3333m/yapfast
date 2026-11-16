@@ -4922,11 +4922,13 @@ impl Application {
     /// The custom emoji this account may use in the selected room, by server, the
     /// room's own server first: with Nitro every server's, and without it only
     /// that server's, none animated.
+    /// The FakeNitro plugin offers them all, sending the others as links.
     pub fn usable_emoji(&self) -> Vec<chat::EmojiSet> {
+        let all = crate::plugins::on(crate::plugins::Plugin::FakeNitro);
         self.emoji_sets()
             .into_iter()
             .map(|set| chat::EmojiSet {
-                emoji: set.emoji.into_iter().filter(|emoji| emoji.usable).collect(),
+                emoji: set.emoji.into_iter().filter(|emoji| all || emoji.usable).collect(),
                 ..set
             })
             .filter(|set| !set.emoji.is_empty())

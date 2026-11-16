@@ -83,7 +83,13 @@ fn volumes(kind: Kind) -> &'static RwLock<HashMap<String, f32>> {
 
 /// Sets how loud `person` sounds; the default gain forgets the choice.
 pub fn set(kind: Kind, person: &str, volume: f32) {
-    let volume = volume.clamp(0.0, MAX);
+    // VolumeBooster's 400% on the slider: 18 dB, about eight times.
+    let max = if crate::plugins::on(crate::plugins::Plugin::VolumeBooster) {
+        8.0
+    } else {
+        MAX
+    };
+    let volume = volume.clamp(0.0, max);
     {
         let mut volumes = volumes(kind).write().unwrap();
         if (volume - kind.default_gain()).abs() < f32::EPSILON {

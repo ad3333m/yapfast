@@ -3,7 +3,7 @@ import { SettingsNavigation } from "yapfast/settings-nav.slint";
 import { ClientStyle } from "yapfast/style.slint";
 import { ComboBox } from "std-widgets.slint";
 import { ScrollView } from "scrollview.slint";
-import { Theme, Middle, Label, Tip, Popup, Looks } from "theme.slint";
+import { Theme, Middle, Label, Tip, Popup, Looks, Plugins } from "theme.slint";
 import { ActionButton, IconButton, Avatar, SensitivitySlider, VolumeSlider, TextField, StatusText, AccountLook } from "controls.slint";
 import { DiscordLinkPanel } from "discord.slint";
 import { ChannelRow } from "rail.slint";
@@ -365,7 +365,7 @@ export component SettingsCard inherits Rectangle {
 export component SettingsScreen inherits Rectangle {
     /// The section showing: 0 account, 1 voice and video, 2 messages,
     /// 3 notifications, 4 Discord, 5 sounds, 6 advanced, 7 appearance,
-    /// 8 game activity, 9 about, 10 keybinds.
+    /// 8 game activity, 9 about, 10 keybinds, 11 plugins.
     in-out property <int> settings-section;
     in property <bool> discord-build;
     in property <bool> preview;
@@ -384,6 +384,7 @@ export component SettingsScreen inherits Rectangle {
         { heading: true, text: "SETTINGS" },
         { text: "My account", icon: @image-url("icons/user.svg"), id: 0 },
         { text: "Appearance", icon: @image-url("icons/palette.svg"), id: 7 },
+        { text: "Plugins", icon: @image-url("icons/puzzle.svg"), id: 11 },
         { text: "Voice & video", icon: @image-url("icons/headphones.svg"), id: 1 },
         { text: "Keybinds", icon: @image-url("icons/keyboard.svg"), id: 10 },
         { text: "Messages", icon: @image-url("icons/message-circle.svg"), id: 2 },
@@ -398,6 +399,7 @@ export component SettingsScreen inherits Rectangle {
         { heading: true, text: "SETTINGS" },
         { text: "My account", icon: @image-url("icons/user.svg"), id: 0 },
         { text: "Appearance", icon: @image-url("icons/palette.svg"), id: 7 },
+        { text: "Plugins", icon: @image-url("icons/puzzle.svg"), id: 11 },
         { text: "Voice & video", icon: @image-url("icons/headphones.svg"), id: 1 },
         { text: "Keybinds", icon: @image-url("icons/keyboard.svg"), id: 10 },
         { text: "Messages", icon: @image-url("icons/message-circle.svg"), id: 2 },
@@ -416,7 +418,8 @@ export component SettingsScreen inherits Rectangle {
                 : root.settings-section == 2 ? "Messages" : root.settings-section == 3 ? "Notifications"
                 : root.settings-section == 4 ? "Discord" : root.settings-section == 5 ? "Sounds"
                 : root.settings-section == 6 ? "Advanced" : root.settings-section == 7 ? "Appearance"
-                : root.settings-section == 9 ? "About" : root.settings-section == 10 ? "Keybinds" : "Game Activity";
+                : root.settings-section == 9 ? "About" : root.settings-section == 10 ? "Keybinds"
+                : root.settings-section == 11 ? "Plugins" : "Game Activity";
             account-name: root.account-name; account-initial: root.account-initial;
             account-tint: root.account-tint; account-picture: root.account-picture;
             with-discord: root.discord-build && !root.preview;
@@ -1042,6 +1045,10 @@ export component AppearanceSettings inherits VerticalLayout {
     callback save-theme();
     callback cancel-theme();
     callback delete-theme();
+    /// Endcord themes: a .theme.css file, or a link to one.
+    in property <string> import-note;
+    callback import-file();
+    callback import-link(string);
     /// The desktop draws the window's title bar; offered where Yapfast can
     /// draw its own.
     in-out property <bool> system-title-bar;
@@ -1053,11 +1060,25 @@ export component AppearanceSettings inherits VerticalLayout {
         spacing: 8px;
         HorizontalLayout {
             SettingsHeading { text: "THEME"; vertical-alignment: center; horizontal-stretch: 1; }
-            ActionButton {
-                text: "New theme"; small: true; icon: @image-url("icons/circle-plus.svg");
-                clicked => { root.new-theme(); }
+            HorizontalLayout {
+                spacing: 8px;
+                ActionButton {
+                    text: "Import theme"; small: true; icon: @image-url("icons/download.svg");
+                    clicked => { root.import-file(); }
+                }
+                ActionButton {
+                    text: "New theme"; small: true; icon: @image-url("icons/circle-plus.svg");
+                    clicked => { root.new-theme(); }
+                }
             }
         }
+        // Endcord's Online Themes: a link to a .theme.css.
+        TextField {
+            placeholder: "Paste an Endcord, Vencord or BetterDiscord theme link and press Enter";
+            label: "Theme link"; min-height: 36px; text-size: 14px;
+            accepted => { root.import-link(self.text); self.text = ""; }
+        }
+        if root.import-note != "": Label { text: root.import-note; }
         // As many 150px or wider cards across as fit, in rows.
         Rectangle {
             property <length> gap: 12px;
@@ -1793,5 +1814,67 @@ export component DiscordSettings inherits VerticalLayout {
                 clicked => { root.blocked-shown += 5; }
             }
         }
+    }
+}
+
+// Settings: plugins, in the manner of Vencord's (docs/plugins.md). The first
+// four are their own; the rest flip settings other sections show too.
+export component PluginSettings inherits VerticalLayout {
+    in-out property <bool> share-typing;
+    in-out property <bool> reply-ping;
+    in-out property <bool> strip-tracking;
+    in property <bool> show-hidden-channels;
+    callback preferences-changed();
+    callback show-hidden-channels-toggled(bool);
+    spacing: 16px;
+    SettingsTitle { text: "Plugins"; }
+    Label { text: "Extra behaviours, in the manner of Vencord's plugins. Each takes effect as you flip it."; }
+    SettingsSwitch {
+        text: "MessageLogger";
+        description: "Deleted messages stay where they were, marked (deleted), and edited messages show what they said before, until the channel loads again.";
+        checked <=> Plugins.message-logger;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "FakeNitro";
+        description: "Pick any server's emoji, animated ones too. The ones your account can't use go as links to their pictures, which Discord shows.";
+        checked <=> Plugins.fake-nitro;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "SecretGuard";
+        description: "Holds back a message that looks like it gives away a card number or a password. Press Enter again to send it anyway.";
+        checked <=> Plugins.secret-guard;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "VolumeBooster";
+        description: "People's and streams' volume sliders go up to 400%.";
+        checked <=> Plugins.volume-booster;
+        toggled => { root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "SilentTyping";
+        description: "Nobody sees you typing.";
+        checked: !root.share-typing; controlled: true;
+        toggled(on) => { root.share-typing = !on; root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "NoReplyMention";
+        description: "Replies don't mention the person you reply to unless you turn it on for that reply.";
+        checked: !root.reply-ping; controlled: true;
+        toggled(on) => { root.reply-ping = !on; root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "ClearURLs";
+        description: "Takes tracking out of the links you send.";
+        checked: root.strip-tracking; controlled: true;
+        toggled(on) => { root.strip-tracking = on; root.preferences-changed(); }
+    }
+    SettingsSwitch {
+        text: "ShowHiddenChannels";
+        description: "Lists the channels you can't open, locked.";
+        checked: root.show-hidden-channels; controlled: true;
+        toggled(shown) => { root.show-hidden-channels-toggled(shown); }
     }
 }

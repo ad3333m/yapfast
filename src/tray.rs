@@ -74,24 +74,20 @@ impl Tray {
     }
 }
 
-/// Yapfast's logo in Yap's marigold, `size` pixels square, with a red dot for
-/// unread messages cut into its corner.
+/// Discord's logo, white on blurple, `size` pixels square, with a red dot for
+/// unread messages in its corner.
 fn logo(size: u32, unread: bool) -> Option<slint::SharedPixelBuffer<slint::Rgba8Pixel>> {
-    let mut svg = include_str!("../ui/icons/logo.svg")
-        .replacen(
-            r#"width="24" height="24""#,
-            &format!(r#"width="{size}" height="{size}""#),
-            1,
-        )
-        .replacen(r##"fill="#fff" mask"##, r##"fill="#ffbf47" mask"##, 1);
+    let mut svg = include_str!("../packaging/icon.svg").replacen(
+        r#"width="64" height="64""#,
+        &format!(r#"width="{size}" height="{size}""#),
+        1,
+    );
     if unread {
-        svg = svg
-            .replacen("</mask>", r#"<circle cx="74" cy="74" r="21" /></mask>"#, 1)
-            .replacen(
-                "</svg>",
-                r##"<circle cx="74" cy="74" r="15" fill="#f0545e" /></svg>"##,
-                1,
-            );
+        svg = svg.replacen(
+            "</svg>",
+            r##"<circle cx="19" cy="19" r="5" fill="#f0545e" /></svg>"##,
+            1,
+        );
     }
     slint::Image::load_from_svg_data(svg.as_bytes())
         .ok()?
@@ -572,19 +568,19 @@ mod none {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn the_logo_is_marigold_and_unread_adds_a_red_dot() {
+    fn the_logo_is_blurple_and_unread_adds_a_red_dot() {
         let plain = super::logo(32, false).unwrap();
         let unread = super::logo(32, true).unwrap();
         assert_eq!((plain.width(), plain.height()), (32, 32));
-        let marigold = |pixel: &slint::Rgba8Pixel| {
-            pixel.a == 255 && (pixel.r, pixel.g, pixel.b) == (0xff, 0xbf, 0x47)
+        let blurple = |pixel: &slint::Rgba8Pixel| {
+            pixel.a == 255 && (pixel.r, pixel.g, pixel.b) == (0x58, 0x65, 0xf2)
         };
         let red = |pixel: &slint::Rgba8Pixel| {
             pixel.a == 255 && (pixel.r, pixel.g, pixel.b) == (0xf0, 0x54, 0x5e)
         };
-        assert!(plain.as_slice().iter().any(marigold));
+        assert!(plain.as_slice().iter().any(blurple));
         assert!(!plain.as_slice().iter().any(red));
-        assert!(unread.as_slice().iter().any(marigold));
+        assert!(unread.as_slice().iter().any(blurple));
         // The dot is in the bottom-right corner.
         let corner = (24 * 32 + 24) as usize;
         assert!(red(&unread.as_slice()[corner]));

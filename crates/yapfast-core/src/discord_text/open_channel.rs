@@ -1977,12 +1977,18 @@ fn change(messages: &mut BTreeMap<u64, Message>, channel: &str, event: &Live) ->
                 Some(poll) if !poll.counted => known.poll.take(),
                 poll => poll.clone(),
             };
+            let logged = crate::plugins::on(crate::plugins::Plugin::MessageLogger)
+                .then(|| crate::plugins::edited(&known.content, &message.content))
+                .flatten();
             *known = Message {
                 reactions,
                 poll,
                 reply,
                 ..message.clone()
             };
+            if let Some(content) = logged {
+                known.content = content;
+            }
             Some(message.order())
         }
         Live::Vote {
@@ -2001,6 +2007,13 @@ fn change(messages: &mut BTreeMap<u64, Message>, channel: &str, event: &Live) ->
             id: message,
         } if id == channel => {
             let order = message.parse().unwrap_or_default();
+            // MessageLogger keeps it, saying it was deleted.
+            if crate::plugins::on(crate::plugins::Plugin::MessageLogger) {
+                let known = messages.get_mut(&order)?;
+                known.content = crate::plugins::deleted(&known.content)?;
+                known.editable = false;
+                return Some(order);
+            }
             messages.remove(&order).map(|_| order)
         }
         Live::Reaction {

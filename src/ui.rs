@@ -45,6 +45,7 @@ mod call_link;
 mod call_timer;
 mod callbacks;
 mod channel_settings;
+mod css_theme;
 mod emoji_animation;
 mod emoji_grid;
 mod games;
@@ -1278,6 +1279,8 @@ struct Layout {
     name_styles: Option<bool>,
     server_tags: Option<bool>,
     profile_frames: Option<bool>,
+    /// The plugins on in Settings → Plugins, by name, such as `MessageLogger`.
+    plugins: Vec<String>,
     /// Joining a call turns the microphone on; on unless turned off.
     unmute_on_join: Option<bool>,
     /// Joining a call deafens.
@@ -1568,6 +1571,48 @@ impl Layout {
     }
 
     /// Reads Settings' profile switches.
+    /// Sets Settings → Plugins' switches as saved, and turns those plugins on.
+    fn show_plugins(&self, window: &YapfastWindow) {
+        use yapfast_core::plugins::{self, Plugin};
+        let on = |plugin: Plugin| {
+            let name = format!("{plugin:?}");
+            self.plugins.iter().any(|kept| *kept == name)
+        };
+        let switches = window.global::<Plugins>();
+        switches.set_message_logger(on(Plugin::MessageLogger));
+        switches.set_fake_nitro(on(Plugin::FakeNitro));
+        switches.set_secret_guard(on(Plugin::SecretGuard));
+        switches.set_volume_booster(on(Plugin::VolumeBooster));
+        for plugin in [
+            Plugin::MessageLogger,
+            Plugin::FakeNitro,
+            Plugin::SecretGuard,
+            Plugin::VolumeBooster,
+        ] {
+            plugins::set(plugin, on(plugin));
+        }
+    }
+
+    /// Keeps the plugins Settings → Plugins has on, and turns them on.
+    fn read_plugins(&mut self, window: &YapfastWindow) {
+        use yapfast_core::plugins::{self, Plugin};
+        let switches = window.global::<Plugins>();
+        let states = [
+            (Plugin::MessageLogger, switches.get_message_logger()),
+            (Plugin::FakeNitro, switches.get_fake_nitro()),
+            (Plugin::SecretGuard, switches.get_secret_guard()),
+            (Plugin::VolumeBooster, switches.get_volume_booster()),
+        ];
+        self.plugins = states
+            .iter()
+            .filter(|(_, on)| *on)
+            .map(|(plugin, _)| format!("{plugin:?}"))
+            .collect();
+        for (plugin, on) in states {
+            plugins::set(plugin, on);
+        }
+    }
+
     fn read_cosmetics(&mut self, window: &YapfastWindow) {
         let looks = window.global::<Looks>();
         self.profile_effects = Some(looks.get_profile_effects());
@@ -1657,6 +1702,7 @@ impl Layout {
         window.set_animate(choice(&ANIMATES, self.animate));
         ANIMATE.set(self.animate);
         self.show_cosmetics(window);
+        self.show_plugins(window);
         show_motion(window);
         window.set_unmute_on_join(self.unmute_on_join.unwrap_or(true));
         window.set_deafen_on_join(self.deafen_on_join);

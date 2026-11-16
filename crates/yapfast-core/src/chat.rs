@@ -1383,6 +1383,20 @@ pub struct EmojiSet {
 /// `text` with each `:name:` of a usable custom emoji, outside code, in Discord's
 /// form, `<:name:id>`. The first emoji of a name wins.
 pub fn wire_emoji(text: &str, usable: &[CustomEmoji]) -> String {
+    replace_emoji(text, usable, |emoji, name| {
+        let animated = if emoji.animated { "a" } else { "" };
+        format!("<{animated}:{name}:{}>", emoji.id)
+    })
+}
+
+/// `text` with each `:name:` of an emoji in `emoji`, outside code, as `write`
+/// writes it. The first emoji of a name wins.
+pub fn replace_emoji(
+    text: &str,
+    emoji: &[CustomEmoji],
+    write: impl Fn(&CustomEmoji, &str) -> String,
+) -> String {
+    let usable = emoji;
     let mut out = String::with_capacity(text.len());
     let mut code = false;
     let mut rest = text;
@@ -1402,8 +1416,7 @@ pub fn wire_emoji(text: &str, usable: &[CustomEmoji]) -> String {
                 .iter()
                 .find(|emoji| emoji.text[1..emoji.text.len() - 1] == *name)
         {
-            let animated = if emoji.animated { "a" } else { "" };
-            out.push_str(&format!("<{animated}:{name}:{}>", emoji.id));
+            out.push_str(&write(emoji, name));
             rest = &rest[end + 2..];
             continue;
         }

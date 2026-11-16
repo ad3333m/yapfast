@@ -2237,6 +2237,10 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         }
     });
     let state = adapter.clone();
+    window.on_import_theme_file(move || state.borrow_mut().import_theme_file());
+    let state = adapter.clone();
+    window.on_import_theme_link(move |link| state.borrow_mut().import_theme_link(&link));
+    let state = adapter.clone();
     let weak = window.as_weak();
     window.on_cancel_theme(move || {
         if let Some(window) = weak.upgrade() {
@@ -2276,6 +2280,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         layout.animate = chosen(&ANIMATES, window.get_animate());
         ANIMATE.set(layout.animate);
         layout.read_cosmetics(&window);
+        layout.read_plugins(&window);
         let cosmetics = layout.cosmetics();
         show_motion(&window);
         layout.unmute_on_join = Some(window.get_unmute_on_join());

@@ -44,6 +44,23 @@ whose id isn't of that form or repeats another's. The editor's rows are a
 Slint model only while it's open; otherwise a custom theme costs its parsed
 colours and a card.
 
+## Endcord themes
+
+Import theme opens a `.theme.css` file, in Endcord's themes folder
+(`%APPDATA%\Endcord\themes`, else Equicord's, Vencord's or BetterDiscord's)
+when there is one; the field under it takes a link to one, as Endcord's Online
+Themes do. `src/ui/css_theme.rs` reads the custom properties the file sets,
+after those of the sheets it `@import`s (up to 8, each downloaded), and leaves
+out rules for a light theme. Yapfast doesn't draw CSS, so only colours come
+across: from midnight's palette when the theme sets `--bg-4` and `--text-3`, as
+midnight and the themes built on it do (rail and sidebar `--bg-4`, chat and
+panel `--bg-3`, raised surfaces and fields `--bg-2`, text `--text-2` to
+`--text-5`, the accent `--accent-3`, links `--accent-1`), else from Discord's
+own variables, new and legacy. Hex, `rgb()`, `hsl()`, `oklch()` and
+`color-mix()` colours read; see-through grounds go solid over black. Every
+colour the theme doesn't give is Bonfire's. The import is saved as a custom
+theme named by its `@name`, so its pencil edits it like any other.
+
 | Theme | Id | Dark | Accent | From |
 | --- | --- | --- | --- | --- |
 | Yap | `yap` | yes | marigold | Yapfast's own, the default |

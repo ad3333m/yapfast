@@ -190,6 +190,152 @@ impl Adapter {
     }
 }
 
+impl Adapter {
+    /// Opens a file dialog for an Endcord, Vencord or BetterDiscord theme, in
+    /// Endcord's themes folder when there is one, and imports the file picked.
+    pub(super) fn import_theme_file(&mut self) {
+        let (weak, runtime) = (self.weak.clone(), self.runtime.clone());
+        let folder = theme_folders().into_iter().find(|folder| folder.is_dir());
+        self.dialog(async move {
+            let mut dialog = rfd::AsyncFileDialog::new()
+                .set_title("Import a theme")
+                .add_filter("Themes", &["css"]);
+            if let Some(folder) = folder {
+                dialog = dialog.set_directory(folder);
+            }
+            let Some(file) = dialog.pick_file().await else {
+                return;
+            };
+            let name = file.file_name();
+            let name = name.split('.').next().unwrap_or(&name).to_owned();
+            match std::fs::read_to_string(file.path()) {
+                Ok(css) => import_css(weak, runtime, css, name).await,
+                Err(error) => import_note(&weak, &format!("Yapfast could not read it: {error}")),
+            }
+        });
+    }
+
+    /// Imports the theme a link gives, as Endcord's Online Themes take them.
+    pub(super) fn import_theme_link(&mut self, link: &str) {
+        let link = link.trim().to_owned();
+        // The adapter is borrowed here, so the note goes straight to the window.
+        let note = |note: &str| {
+            if let Some(window) = self.window.upgrade() {
+                window.set_theme_import_note(note.into());
+            }
+        };
+        if !link.starts_with("https://") {
+            note("Paste a link that starts with https://.");
+            return;
+        }
+        note("Importing…");
+        let (weak, runtime) = (self.weak.clone(), self.runtime.clone());
+        let name = link
+            .trim_end_matches('/')
+            .rsplit('/')
+            .next()
+            .and_then(|last| last.split('.').next())
+            .unwrap_or("Theme")
+            .to_owned();
+        let task = runtime.spawn(fetch_sheets(vec![link]));
+        let spawned = slint::spawn_local(async move {
+            match task.await.unwrap_or_default().pop() {
+                Some(css) => import_css(weak, runtime, css, name).await,
+                None => import_note(&weak, "Yapfast could not download that theme."),
+            }
+        });
+        if let Err(error) = spawned {
+            tracing::error!(%error, "could not import a theme");
+        }
+    }
+}
+
+/// Where Endcord and the mods it's built on keep their themes, for the file
+/// dialog to open in.
+fn theme_folders() -> Vec<std::path::PathBuf> {
+    let Some(roaming) = std::env::var_os("APPDATA").map(std::path::PathBuf::from) else {
+        return Vec::new();
+    };
+    ["Endcord", "Equicord", "Vencord", "BetterDiscord"]
+        .iter()
+        .map(|mod_name| roaming.join(mod_name).join("themes"))
+        .collect()
+}
+
+/// Reads a theme's colours, with those of the sheets it imports under its
+/// own, and keeps it among the person's themes, chosen.
+async fn import_css(
+    weak: std::rc::Weak<RefCell<Adapter>>,
+    runtime: Arc<BackgroundRuntime>,
+    css: String,
+    name: String,
+) {
+    let imports = css_theme::imports(&css);
+    let sheets = if imports.is_empty() {
+        Vec::new()
+    } else {
+        runtime.spawn(fetch_sheets(imports)).await.unwrap_or_default()
+    };
+    let mut vars = css_theme::Vars::default();
+    for sheet in &sheets {
+        vars.read(sheet);
+    }
+    vars.read(&css);
+    if css_theme::colours(&vars).is_empty() {
+        import_note(&weak, "That theme sets no colours Yapfast can read.");
+        return;
+    }
+    let name = css_theme::meta(&css, "name").unwrap_or(name);
+    let Some(adapter) = weak.upgrade() else {
+        return;
+    };
+    let mut adapter = adapter.borrow_mut();
+    let Some(window) = adapter.window.upgrade() else {
+        return;
+    };
+    let id = theme::new_id(&adapter.layout.custom_themes);
+    let custom = theme::from_css(id.clone(), name.clone(), &vars);
+    adapter.layout.custom_themes.push(custom);
+    window.set_themes(theme::cards(&adapter.layout.custom_themes));
+    adapter.choose_theme(&window, &id);
+    window.set_theme_import_note(format!("Imported {name}. Its pencil edits its colours.").into());
+}
+
+/// Downloads each sheet, up to 8 of them and 4 MiB each; one that fails is
+/// left out.
+async fn fetch_sheets(links: Vec<String>) -> Vec<String> {
+    let Ok(client) = crate::update::client() else {
+        return Vec::new();
+    };
+    let mut sheets = Vec::new();
+    for link in links.into_iter().take(8) {
+        let response = client
+            .get(&link)
+            .timeout(std::time::Duration::from_secs(20))
+            .send()
+            .await
+            .and_then(|response| response.error_for_status());
+        match response {
+            Ok(response) => match response.bytes().await {
+                Ok(bytes) if bytes.len() <= 4 << 20 => {
+                    sheets.push(String::from_utf8_lossy(&bytes).into_owned());
+                }
+                Ok(_) => tracing::warn!("a theme's sheet is over 4 MiB"),
+                Err(error) => tracing::warn!(error = %error.without_url(), "could not download a theme's sheet"),
+            },
+            Err(error) => tracing::warn!(error = %error.without_url(), "could not download a theme's sheet"),
+        }
+    }
+    sheets
+}
+
+/// Says under Appearance's themes how an import went.
+fn import_note(weak: &std::rc::Weak<RefCell<Adapter>>, note: &str) {
+    if let Some(window) = weak.upgrade().and_then(|adapter| adapter.borrow().window.upgrade()) {
+        window.set_theme_import_note(note.into());
+    }
+}
+
 /// What a new theme copied from another is called until the person names it.
 fn copy_name(name: &str) -> String {
     format!("{name} copy")

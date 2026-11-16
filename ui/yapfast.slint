@@ -48,7 +48,7 @@ import { PersonRow, VoiceCard, CallLink, CallLinkCard, LinkTouch, SignalIcon, Vo
 import { ServerRow, RoomRow, StatusDot, ServerRail, ServerHeader, RoomList, VoiceCardView } from "rail.slint";
 import { StagedFile, StagedTile, Composer, MentionRow, MentionList, EmojiSuggestions, RequestBar } from "composer.slint";
 import { InlineEdit, EmojiCell, EmojiRow, EmojiTile, EmojiSection, RailSection, EmojiCard, EmojiCardView, MessageStickerCard, MessageStickerCardView, MessageRow, ReactionToggle, EmojiButton, EmojiPicker, MessageMenu, MessageGallery, MessageStickers, FileCard, MessageContent, EmbedView, BotTag, NoConversation, ConversationStart, HistoryEdge, UnreadBar, PresentBar, ImageViewer, VideoViewer, VideoPlayer, VoicePlayer, Polls } from "messages.slint";
-import { Choices, SettingsRow, SettingsScreen, AccountSettings, AppearanceSettings, ThemeCard, ThemeColour, VoiceSettings, KeybindSettings, KeybindRow, MessageSettings, NotificationSettings, SoundSettings, AdvancedSettings, DiscordLinkSettings, DiscordSettings, BlockedRow, GameActivitySettings, GameExecutable, AboutSettings } from "settings.slint";
+import { Choices, SettingsRow, SettingsScreen, AccountSettings, AppearanceSettings, ThemeCard, ThemeColour, VoiceSettings, KeybindSettings, KeybindRow, MessageSettings, NotificationSettings, SoundSettings, AdvancedSettings, DiscordLinkSettings, DiscordSettings, BlockedRow, GameActivitySettings, GameExecutable, AboutSettings, PluginSettings } from "settings.slint";
 import { ActivityMenu, MemberRow, MemberActivityRow, ProfileData, BadgeTipCard, ProfileServerRow, MemberPanel, ProfileCard, ProfileModal, ServerCard, RoleCard, TagCard, TagCardView } from "people.slint";
 import { RequestRow, FriendRow, FriendsScreen, HeaderTab, RequestsScreen, AddFriendDialog } from "friends.slint";
 import { ContactRow, PlaceRow, ReactionPill, ReactorRow, StatusDialog, NewDmDialog, ForwardDialog, QuickSwitcher, ReactionsDialog, StatusMenu, PersonPrompt, PersonDialog, LeavingDialog, PollAnswerDraft, PollDialog } from "dialogs.slint";
@@ -73,7 +73,7 @@ export { BuildInfo, Updates, UpdateStatus } from "yapfast/build-info.slint";
 import { NewTags } from "yapfast/new-tags.slint";
 export { NewTags } from "yapfast/new-tags.slint";
 export { InboxRow } from "yapfast/inbox.slint";
-export { Theme, Badges, Popup, Twemoji, Looks } from "theme.slint";
+export { Theme, Badges, Popup, Twemoji, Looks, Plugins } from "theme.slint";
 export { Autoscroll } from "scrollview.slint";
 export { PersonRow, CallLink, ShareScreen, VoiceCard } from "voice.slint";
 export { ServerRow, RoomRow, FolderServer } from "rail.slint";
@@ -1421,6 +1421,11 @@ export component YapfastWindow inherits Window {
     callback save-theme();
     callback cancel-theme();
     callback delete-theme();
+    /// Imports an Endcord, Vencord or BetterDiscord theme from a file the
+    /// person picks, or from a link; the note says how it went.
+    callback import-theme-file();
+    callback import-theme-link(string);
+    in-out property <string> theme-import-note;
     changed settings-section => {
         root.track-new();
         if root.theme-editor && root.settings-section != 7 { root.cancel-theme(); }
@@ -4414,6 +4419,9 @@ export component YapfastWindow inherits Window {
             save-theme => { root.save-theme(); }
             cancel-theme => { root.cancel-theme(); }
             delete-theme => { root.delete-theme(); }
+            import-note: root.theme-import-note;
+            import-file => { root.import-theme-file(); }
+            import-link(link) => { root.import-theme-link(link); }
         }
         if root.settings-section == 1: VoiceSettings {
             microphones: root.microphones; microphone-index <=> root.microphone-index;
@@ -4441,6 +4449,12 @@ export component YapfastWindow inherits Window {
             select-camera(index) => { root.select-camera(index); }
             refresh-devices => { root.refresh-devices(); }
             preferences-changed => { root.preferences-changed(); }
+        }
+        if root.settings-section == 11: PluginSettings {
+            share-typing <=> root.share-typing; reply-ping <=> root.reply-ping-default;
+            strip-tracking <=> root.strip-tracking; show-hidden-channels: root.show-hidden-channels;
+            preferences-changed => { root.preferences-changed(); }
+            show-hidden-channels-toggled(shown) => { root.show-hidden-channels = shown; root.show-hidden-channels-toggled(shown); }
         }
         if root.settings-section == 10: KeybindSettings {
             rows: root.keybind-rows; note: root.keybinds-note;

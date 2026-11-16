@@ -209,6 +209,12 @@ fn with_picture(shown: EmojiCell) -> Option<EmojiCell> {
     (picture.size().width > 0).then_some(EmojiCell { picture, ..shown })
 }
 
+/// The FakeNitro plugin unlocks every custom emoji in the picker; the ones
+/// this account can't use go as links (`outgoing_body`).
+fn fake_nitro() -> bool {
+    yapfast_core::plugins::on(yapfast_core::plugins::Plugin::FakeNitro)
+}
+
 /// The picker's key for an emoji as Discord's settings name it, and whether it
 /// may be used here: a custom emoji's id, found in `custom`, or a Unicode
 /// emoji's Discord name, such as `slight_smile`, `thumbsup_tone2`,
@@ -220,7 +226,7 @@ pub fn discord_key(
     custom: &HashMap<&str, &yapfast_core::chat::CustomEmoji>,
 ) -> Option<(String, bool)> {
     if let Some(emoji) = custom.get(name) {
-        return Some((custom_key(emoji), emoji.usable));
+        return Some((custom_key(emoji), emoji.usable || fake_nitro()));
     }
     // A skin tone comes last in most names, but in some within them.
     let (base, tone) = match name.split_once("_tone") {
@@ -460,7 +466,7 @@ pub fn rows(
             set.emoji
                 .iter()
                 .filter(|emoji| query.is_empty() || emoji.text.to_lowercase().contains(&query))
-                .map(|emoji| (custom_key(emoji), emoji.usable))
+                .map(|emoji| (custom_key(emoji), emoji.usable || fake_nitro()))
                 .collect()
         })
         .collect();

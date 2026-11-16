@@ -727,6 +727,26 @@ impl<'de> serde::Deserialize<'de> for Custom {
     }
 }
 
+/// A theme from an Endcord, Vencord or BetterDiscord theme's properties,
+/// over Bonfire, Discord's dark theme, for the colours it doesn't give.
+pub fn from_css(id: String, name: String, vars: &super::css_theme::Vars) -> Custom {
+    let base = find("bonfire").unwrap_or(&BUILT_IN[0]);
+    let mut theme = base.theme;
+    for (token, [red, green, blue, alpha]) in super::css_theme::colours(vars) {
+        if let Some(slot) = token_index(token).and_then(|index| theme.colour_mut(index)) {
+            *slot = Color::from_argb_u8(alpha, red, green, blue);
+        }
+    }
+    let chat = theme.chat;
+    theme.dark = super::css_theme::dark([chat.red(), chat.green(), chat.blue(), 255]);
+    Custom {
+        id,
+        name,
+        base: base.id,
+        theme,
+    }
+}
+
 /// The number in a custom theme's id, if it's one Yapfast gives.
 fn custom_number(id: &str) -> Option<u32> {
     id.strip_prefix("custom:")?.parse().ok()

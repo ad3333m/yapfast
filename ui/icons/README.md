@@ -36,7 +36,7 @@ glyphs such as check, x and chevrons.
   their Discord server; noise-bars and noise-bars-off (five rounded bars of
   a sound, and the same with a slash and a gap cut around it), the call
   panel's noise suppression toggle; and for Discord's channel kinds,
-  megaphone (an announcement channel), stage (a broadcast mast) and rules (a
+  megaphone (an announcement channel), puzzle (a jigsaw piece, Settings → Plugins), stage (a broadcast mast) and rules (a
   book with a check cut out of its cover).
 - The channel icons with a badge at their top right, the room around it
   cut from the icon: hash, megaphone, message-square-text, image, volume-2

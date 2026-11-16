@@ -123,7 +123,8 @@ impl Application {
         if !message.can_edit || !self.state.can_write_in(&room) {
             return vec![];
         }
-        let text = mention::as_typed(&message.body, &message.mentions);
+        // Without what MessageLogger noted under it.
+        let text = mention::as_typed(crate::plugins::unlogged(&message.body), &message.mentions);
         self.state.edit = Some(Editing {
             room,
             item,
@@ -210,12 +211,20 @@ impl Application {
         }
         let wired = mention::wire(&text, &self.state.mention_candidates());
         if Network::of(room) == Network::Discord {
-            let usable: Vec<chat::CustomEmoji> = self
-                .usable_emoji()
+            let (usable, locked): (Vec<chat::CustomEmoji>, Vec<_>) = self
+                .emoji_sets()
                 .into_iter()
                 .flat_map(|set| set.emoji)
-                .collect();
-            chat::wire_emoji(&wired, &usable)
+                .partition(|emoji| emoji.usable);
+            let wired = chat::wire_emoji(&wired, &usable);
+            // FakeNitro sends the others as links to their pictures.
+            if crate::plugins::on(crate::plugins::Plugin::FakeNitro) {
+                chat::replace_emoji(&wired, &locked, |emoji, name| {
+                    crate::plugins::emoji_link(name, &emoji.id, emoji.animated)
+                })
+            } else {
+                wired
+            }
         } else {
             wired
         }
@@ -317,6 +326,19 @@ impl Application {
             .filter(|_| Network::of(&id) == Network::Discord);
         let silent = silent_text.is_some();
         let text = silent_text.map_or(draft.as_str(), str::trim_start);
+        // SecretGuard holds a message that looks like it gives away a card
+        // number or a password; Enter again with the warning showing sends it.
+        if crate::plugins::on(crate::plugins::Plugin::SecretGuard)
+            && let Some(what) = crate::plugins::secret(text)
+        {
+            let warning = format!(
+                "SecretGuard: this message looks like it holds {what}. Press Enter again to send it anyway."
+            );
+            if self.state.notice.as_deref() != Some(warning.as_str()) {
+                self.state.notice = Some(warning);
+                return vec![];
+            }
+        }
         let body = self.outgoing_body(&id, text);
         if body.len() > chat::MAX_MESSAGE_BYTES {
             self.state.notice = Some("Keep messages under 16 KB.".into());
