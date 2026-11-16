@@ -34,6 +34,10 @@ use yapfast_core::{
 };
 
 use crate::drop::Drag;
+// rfd has no iOS backend; its stand-in picks nothing. The modules under ui
+// see it through their `use super::*`.
+#[cfg(target_os = "ios")]
+use crate::ios_rfd as rfd;
 use crate::{autostart, custom_emoji, emoji, emoji_text, graphics, zoom};
 
 mod active_now;

@@ -32,6 +32,8 @@ mod graphics;
 mod icon;
 #[cfg(feature = "desktop")]
 mod instance;
+#[cfg(all(feature = "desktop", target_os = "ios"))]
+mod ios_rfd;
 #[cfg(feature = "desktop")]
 mod keybinds;
 #[cfg(feature = "desktop")]
