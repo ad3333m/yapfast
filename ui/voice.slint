@@ -1335,7 +1335,7 @@ export component ShareMenu inherits Rectangle {
                     for name[index] in ["Applications", "Screens", "Devices"]: Rectangle {
                         visible: index == 0 ? root.has-apps : index == 1 ? root.screens.length > 0 : root.cameras.length > 0;
                         width: self.visible ? tab-text.preferred-width : 0px;
-                        accessible-role: tab; accessible-label: name;
+                        accessible-role: AccessibleRole.tab; accessible-label: name;
                         accessible-action-default => { root.tab = index; }
                         tab-text := Text {
                             text: name; font-size: 15px; font-weight: 600; vertical-alignment: center;
