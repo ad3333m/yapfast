@@ -33,7 +33,8 @@ jobs:
             --no-default-features --features desktop,discord 2>&1 | tee build.log
       - name: Errors
         if: failure()
-        run: grep -E "^(error|warning: unused)" -A12 build.log | head -300 || true
+        run: |
+          grep -E "^error" -A12 build.log | head -300 || true
       - name: Package
         run: |
           app=Payload/Yapfast.app
