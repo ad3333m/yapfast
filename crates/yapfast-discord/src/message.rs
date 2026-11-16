@@ -1114,8 +1114,8 @@ pub(crate) fn scaled_url(
             .is_some_and(|path| path.ends_with(".gif"));
     let format = match (gif, animated) {
         (true, _) => "",
-        (false, true) => "animated=true&format=webp&",
-        (false, false) => "format=webp&",
+        (false, true) => "animated=true&format=webp&quality=lossless&",
+        (false, false) => "format=webp&quality=lossless&",
     };
     Some(format!(
         "{url}{separator}{format}width={}&height={}",
@@ -2638,11 +2638,11 @@ mod tests {
         assert!(message.attachments[0].image);
         assert_eq!(
             message.attachments[0].preview_url.as_deref(),
-            Some("https://media/cat.png?ex=1&animated=true&format=webp&width=550&height=206")
+            Some("https://media/cat.png?ex=1&animated=true&format=webp&quality=lossless&width=550&height=206")
         );
         assert_eq!(
             message.attachments[0].view_url.as_deref(),
-            Some("https://media/cat.png?ex=1&animated=true&format=webp&width=1440&height=540"),
+            Some("https://media/cat.png?ex=1&animated=true&format=webp&quality=lossless&width=1440&height=540"),
             "a small image isn't enlarged"
         );
         // A video plays from the file, its poster from the media proxy.
@@ -2651,7 +2651,7 @@ mod tests {
         assert_eq!(video.video_url.as_deref(), Some("https://cdn/clip.mp4"));
         assert_eq!(
             video.preview_url.as_deref(),
-            Some("https://media/clip.mp4?format=webp&width=550&height=309")
+            Some("https://media/clip.mp4?format=webp&quality=lossless&width=550&height=309")
         );
         assert_eq!(video.dimensions, Some((1920, 1080)));
         assert_eq!(message.attachments[0].video_url, None);
